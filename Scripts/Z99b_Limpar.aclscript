@@ -1,0 +1,49 @@
+SET SESSION - Z99b_Limpar
+SET SAFETY OFF
+
+SET FOLDER /Temp
+
+COMM ** Este script é o complemento do "Z99b_Importacao", pois, no ACL, a estrutura do loop deve estar num script separado.
+
+OPEN AUX_ARQUIVOS
+
+COMM ** Localização do registro indexado por v_Contador em cada passagem do loop de limpeza.
+LOCATE RECORD v_Contador
+
+COMM ** Nome do arquivo correspondente ao registro indexado por v_Contador.
+v_Arquivo = ALLTRIM(FILE_NAME)
+
+COMM ** Exclusão do arquivo.
+DELETE "%v_Arquivo%" OK
+
+COMM ** Incremento do contador.
+v_Contador = v_Contador + 1
+
+
+COMMENT
+** Padronização para campos, filtros e resultados gerados.
+** c_ - Prefixo para campo calculado;
+** f_ - Prefixo para filtro salvo;
+** P_ - Prefixo para resultados gerados.
+
+
+COMMENT
+** Padronização para tabelas temporárias.
+** O nome da tabela gerada deverá obedecer a seguinte nomenclatura T<NN>_<XXXX>_<ZZZZ> onde:
+** NN   - Número sequencial de tabelas geradas;
+** XXXX - Comando utilizado para geração da tabela
+**        Ex: JOIN = JOIN, EXTR = EXTRACT, APPE = APPEND, SUMM = SUMMARIZE, CTAB = CROSS TAB, etc;
+** ZZZZ - Algo que identifique a origem da tabela temporária
+**        Ex: T01_EXTR_PA0001, T02_JOIN_EKKO_EKPO, etc.
+
+
+COMMENT
+** Padronização para arquivos de parâmetros (utlizados em extrações intermediárias).
+** O nome do arquivo gerado deverá obedecer a seguinte nomenclatura PARAM_<ORIGEM>_TO_<DESTINO> onde:
+** ORIGEM  - Tabela/campo origem da informação.
+** DESTINO - Tabela onde a informação original (tabela/campo) será inserida.
+**           Ex: PARAM_EKKO_TO_EKPO.txt, PARAM_EBELN_TO_EKPO, PARAM_BKPF_TO_BSAK.txt, etc.
+
+
+CLOSE
+SET SAFETY ON

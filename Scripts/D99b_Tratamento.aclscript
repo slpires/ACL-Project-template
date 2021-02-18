@@ -1,0 +1,49 @@
+SET SESSION - D99b_Tratamento
+SET SAFETY OFF
+
+SET FOLDER /Temp
+
+COMM ** Este script é o complemento do "D99a_Tratamento", pois, no ACL, a estrutura do loop deve estar num script separado.
+
+OPEN TABELA1
+
+COMM ** Criação dos pacotes para extração intermediária (subsequente) - exemplo.
+LOCATE RECORD (((v_Contador-1) * %v_NrRegExport%) + 1)
+EXPORT FIELDS CAMPO ASCII TO "CAMPO_TO_TABELA2_%v_Contador%.txt" NEXT %v_NrRegExport%
+
+COMM ** Rotina que auxiliará no teste para saber se houve erro na exportação.
+EXTRACT FIELDS CAMPO TO "T00_TESTE" NEXT %v_NrRegExport% OPEN
+COUNT
+IF v_Contador = 1 v_Teste2 = COUNT1
+IF v_Contador > 1 v_Teste2 = v_Teste2 + COUNT1
+
+COMM ** Incremento do contador.
+v_Contador = v_Contador + 1
+
+COMMENT
+** Padronização para campos, filtros e resultados gerados.
+** c_ - Prefixo para campo calculado;
+** f_ - Prefixo para filtro salvo;
+** P_ - Prefixo para resultados gerados.
+
+
+COMMENT
+** Padronização para tabelas temporárias.
+** O nome da tabela gerada deverá obedecer a seguinte nomenclatura T<NN>_<XXXX>_<ZZZZ> onde:
+** NN   - Número sequencial de tabelas geradas;
+** XXXX - Comando utilizado para geração da tabela
+**        Ex: JOIN = JOIN, EXTR = EXTRACT, APPE = APPEND, SUMM = SUMMARIZE, CTAB = CROSS TAB, etc;
+** ZZZZ - Algo que identifique a origem da tabela temporária
+**        Ex: T01_EXTR_PA0001, T02_JOIN_EKKO_EKPO, etc.
+
+
+COMMENT
+** Padronização para arquivos de parâmetros (utlizados em extrações intermediárias).
+** O nome do arquivo gerado deverá obedecer a seguinte nomenclatura PARAM_<ORIGEM>_TO_<DESTINO> onde:
+** ORIGEM  - Tabela/campo origem da informação.
+** DESTINO - Tabela onde a informação original (tabela/campo) será inserida.
+**           Ex: PARAM_EKKO_TO_EKPO.txt, PARAM_EBELN_TO_EKPO, PARAM_BKPF_TO_BSAK.txt, etc.
+
+
+CLOSE
+SET SAFETY ON

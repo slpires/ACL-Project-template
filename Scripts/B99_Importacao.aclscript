@@ -1,0 +1,45 @@
+SET SESSION - B99_Importacao
+SET SAFETY OFF
+
+SET FOLDER /Origem
+
+COMM ** Utilização de caixa de diálogo para os casos onde o nome do arquivo não é fixo.
+DIALOG (DIALOG TITLE "Tabela/Relatório para importação:" WIDTH 433 HEIGHT 110 ) (BUTTONSET TITLE "&OK;&Cancelar" AT 120 72 DEFAULT 1 HORZ ) (TEXT TITLE "Nome do arquivo (com extensão):" AT 12 16 WIDTH 292 HEIGHT 14 ) (EDIT TO "v_Arquivo" AT 12 36 WIDTH 379 HEIGHT 22 DEFAULT "ARQUIVO.TXT" )
+
+COMM ** Vinculação direta dos arquivos - exemplo.
+OPEN "%v_Path%\%v_Arquivo%"              FORMAT TABELA
+OPEN "%v_PathBasicos%\TABELA_BASICA.TXT" FORMAT TABELA_BASICA
+
+
+COMM ** Importação de arquivo - exemplo.
+v_Tabela = SPLIT(ALLTRIM("%v_Arquivo%"); "."; 1)
+
+IMPORT PRINT TO "%v_Tabela%" "%v_Path%\%v_Tabela%.FIL" FROM "%v_Path%\%v_Arquivo%" 0 RECORD "Detalhe" 0 1 0 TEST 0 0 AT 1;10;0 7 "|" FIELD "REGISTRO" C AT 1;1 SIZE 1023;1 DEC 0 WID 1023 PIC "" AS "" 
+
+
+COMMENT
+** Padronização para campos, filtros e resultados gerados.
+** c_ - Prefixo para campo calculado;
+** f_ - Prefixo para filtro salvo;
+** P_ - Prefixo para resultados gerados.
+
+
+COMMENT
+** Padronização para tabelas temporárias.
+** O nome da tabela gerada deverá obedecer a seguinte nomenclatura T<NN>_<XXXX>_<ZZZZ> onde:
+** NN   - Número sequencial de tabelas geradas;
+** XXXX - Comando utilizado para geração da tabela
+**        Ex: JOIN = JOIN, EXTR = EXTRACT, APPE = APPEND, SUMM = SUMMARIZE, CTAB = CROSS TAB, etc;
+** ZZZZ - Algo que identifique a origem da tabela temporária
+**        Ex: T01_EXTR_PA0001, T02_JOIN_EKKO_EKPO, etc.
+
+
+COMMENT
+** Padronização para arquivos de parâmetros (utlizados em extrações intermediárias).
+** O nome do arquivo gerado deverá obedecer a seguinte nomenclatura PARAM_<ORIGEM>_TO_<DESTINO> onde:
+** ORIGEM  - Tabela/campo origem da informação.
+** DESTINO - Tabela onde a informação original (tabela/campo) será inserida.
+**           Ex: PARAM_EKKO_TO_EKPO.txt, PARAM_EBELN_TO_EKPO, PARAM_BKPF_TO_BSAK.txt, etc.
+
+CLOSE
+SET SAFETY ON

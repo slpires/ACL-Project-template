@@ -1,0 +1,44 @@
+SET SESSION - Y99_Layout
+SET SAFETY OFF
+
+COMMENT
+** Formatação de campos para exibição no formato final.
+** OBS: O arquivo "Origem AAAA_NNN.xlsx" auxilia na construção deste script.
+
+OPEN "%v_Produto%"
+DEFINE VIEW Exibição OK
+DEFINE COLUMN Exibição CAMPO1 AS "TABELA_CAMPO1_DESCRICAO" WIDTH 9 PIC "DD/MM/AAAA"     POSITION 1
+DEFINE COLUMN Exibição CAMPO2 AS "TABELA_CAMPO2_DESCRICAO" WIDTH 6                      POSITION 2
+DEFINE COLUMN Exibição CAMPO3 AS "TABELA_CAMPO3_DESCRICAO" WIDTH 5                      POSITION 3
+DEFINE COLUMN Exibição CAMPO4 AS "TABELA_CAMPO4_DESCRICAO" WIDTH 11 PIC "99.999.999,99" POSITION 4
+
+EXPORT FIELDS CAMPO1 AS "TABELA_CAMPO1_DESCRICAO" CAMPO2 AS "TABELA_CAMPO2_DESCRICAO" CAMPO3 AS "TABELA_CAMPO3_DESCRICAO" CAMPO4 AS "TABELA_CAMPO4_DESCRICAO" XLSX TO "%v_path_Produto%\%v_Produto%"
+
+
+COMMENT
+** Padronização para campos, filtros e resultados gerados.
+** c_ - Prefixo para campo calculado;
+** f_ - Prefixo para filtro salvo;
+** P_ - Prefixo para resultados gerados.
+
+
+COMMENT
+** Padronização para tabelas temporárias.
+** O nome da tabela gerada deverá obedecer a seguinte nomenclatura T<NN>_<XXXX>_<ZZZZ> onde:
+** NN   - Número sequencial de tabelas geradas;
+** XXXX - Comando utilizado para geração da tabela
+**        Ex: JOIN = JOIN, EXTR = EXTRACT, APPE = APPEND, SUMM = SUMMARIZE, CTAB = CROSS TAB, etc;
+** ZZZZ - Algo que identifique a origem da tabela temporária
+**        Ex: T01_EXTR_PA0001, T02_JOIN_EKKO_EKPO, etc.
+
+
+COMMENT
+** Padronização para arquivos de parâmetros (utlizados em extrações intermediárias).
+** O nome do arquivo gerado deverá obedecer a seguinte nomenclatura PARAM_<ORIGEM>_TO_<DESTINO> onde:
+** ORIGEM  - Tabela/campo origem da informação.
+** DESTINO - Tabela onde a informação original (tabela/campo) será inserida.
+**           Ex: PARAM_EKKO_TO_EKPO.txt, PARAM_EBELN_TO_EKPO, PARAM_BKPF_TO_BSAK.txt, etc.
+
+
+CLOSE
+SET SAFETY ON

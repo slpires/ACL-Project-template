@@ -1,0 +1,51 @@
+SET SESSION - B99a_Importacao
+SET SAFETY OFF
+
+SET FOLDER /Temp
+
+COMM ** Importação de arquivos utilizando estrutura de loop.
+
+COMM ** Lista os arquivos no diretório.
+DIRECTORY "%v_Path%\*.TXT" SUPPRESS TO AUX_ARQUIVOS
+
+COMM ** Contagem do total de arquivos lidos.
+OPEN AUX_ARQUIVOS
+COUNT
+
+COMM ** Armazenamento da contagem realizada logo acima.
+v_NrReg = COUNT1 
+
+COMM ** Variável que auxiliará no loop.
+v_Contador = 1
+
+COMM ** Execução do loop.
+DO SCRIPT B99b_Importacao WHILE v_Contador <= v_NrReg
+
+
+COMMENT
+** Padronização para campos, filtros e resultados gerados.
+** c_ - Prefixo para campo calculado;
+** f_ - Prefixo para filtro salvo;
+** P_ - Prefixo para resultados gerados.
+
+
+COMMENT
+** Padronização para tabelas temporárias.
+** O nome da tabela gerada deverá obedecer a seguinte nomenclatura T<NN>_<XXXX>_<ZZZZ> onde:
+** NN   - Número sequencial de tabelas geradas;
+** XXXX - Comando utilizado para geração da tabela
+**        Ex: JOIN = JOIN, EXTR = EXTRACT, APPE = APPEND, SUMM = SUMMARIZE, CTAB = CROSS TAB, etc;
+** ZZZZ - Algo que identifique a origem da tabela temporária
+**        Ex: T01_EXTR_PA0001, T02_JOIN_EKKO_EKPO, etc.
+
+
+COMMENT
+** Padronização para arquivos de parâmetros (utlizados em extrações intermediárias).
+** O nome do arquivo gerado deverá obedecer a seguinte nomenclatura PARAM_<ORIGEM>_TO_<DESTINO> onde:
+** ORIGEM  - Tabela/campo origem da informação.
+** DESTINO - Tabela onde a informação original (tabela/campo) será inserida.
+**           Ex: PARAM_EKKO_TO_EKPO.txt, PARAM_EBELN_TO_EKPO, PARAM_BKPF_TO_BSAK.txt, etc.
+
+
+CLOSE
+SET SAFETY ON

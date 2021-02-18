@@ -1,0 +1,70 @@
+SET SESSION - _Executavel
+SET SAFETY OFF
+
+COMMENT
+*******************************************************************
+*******************************************************************
+** PETROBRAS                                                     **
+**                                                               **
+** Finalidade:                                                   **
+**                                                               **
+*******************************************************************
+** Histórico de versões:                                         **
+**                                                               **
+** DD/MM/AAAA - CHAVE - NOME - versão inicial                    **
+** DD/MM/AAAA - CHAVE - NOME - <resumo da modificação>           **
+*******************************************************************
+*******************************************************************
+
+COMMENT
+*******************************
+** FONTES DE CONSULTA DA ACL **
+*******************************
+**
+** Help Docs (a partir da versão 11.3) - https://community.acl.com/s/help-docs?language=en_US
+**
+** Versão 10.5 - http://docs.acl.com/acl/105/index.jsp
+**
+** Versão 10 - http://docs.acl.com/acl/10/index.jsp
+
+
+COMMENT
+** Orientações gerais:
+** - Mensagens de retorno ("PAUSE") devem estar sempre no script "_Executavel";
+** - Caixas de diálogo para controles de fluxo devem estar nos scripts variáveis "A<NN>_".
+
+
+COMM ** Exemplo de sequência de scripts para execução em apenas um fluxo.
+
+DO A01_Variaveis
+DO B01_Importacao 
+DO C01_Join 
+DO D01_Tratamento
+PAUSE "Arquivo PARAM_<ORIGEM>_TO_<DESTINO>.TXT gerado na pasta Origem. Providenciar extração da tabela <XXXX>."
+DO C02_Join 
+DO Y01_Produto 
+DO Y02_Layout
+PAUSE "Produto final gerado! ATENÇÃO!!! Executar o script de limpeza 'Z99a_Limpar' somente após a inspeção final!"
+
+
+COMM ** Exemplo de sequência de scripts para execução em fluxos alternativos.
+
+COMM ** Declaração de variáveis.
+DO A01_Variaveis
+
+COMM ** Execução de scripts se forem selecionadas as opções 1 ou 3.
+IF v_Opcao = 1 OR v_Opcao = 3 DO B01_Importacao
+IF v_Opcao = 1 OR v_Opcao = 3 DO C01_Importacao
+IF v_Opcao = 1 OR v_Opcao = 3 DO D01_Tratamento
+
+COMM ** Execução de scripts se forem selecionadas as opções 2 ou 3.
+IF v_Opcao = 2 OR v_Opcao = 3 DO B02_Importacao
+
+COMM ** Execução de scripts se forem selecionadas as opções 1, 2 ou 3.
+IF v_Opcao = 1 OR v_Opcao = 3 DO Y01_Produto
+IF v_Opcao = 2 OR v_Opcao = 3 DO Y02_Layout
+IF                v_Opcao = 1 DO Z01_Limpar
+
+
+CLOSE
+SET SAFETY ON

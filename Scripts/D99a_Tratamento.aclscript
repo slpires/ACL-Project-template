@@ -1,0 +1,56 @@
+SET SESSION - D99a_Tratamento
+SET SAFETY OFF
+
+SET FOLDER /Temp
+
+COMM ** Exportação de registros para extração intermediária (subsequente) utilizando estrutura de loop.
+
+COMM ** Contagem do total de registros lidos.
+OPEN TABELA
+COUNT
+v_Teste1 = COUNT1
+v_Teste2 = 0
+
+COMM ** Definição da quantidade de arquivos (pacotes) a serem utilizados na extração intermediária (subsequente).
+IF MOD(COUNT1; %v_NrRegExport%) <  (%v_NrRegExport% / 2) v_NrArquivos = (COUNT1 / %v_NrRegExport%) + 1 
+IF MOD(COUNT1; %v_NrRegExport%) >= (%v_NrRegExport% / 2) v_NrArquivos = (COUNT1 / %v_NrRegExport%)
+
+COMM ** Variável que auxiliará no loop.
+v_Contador = 1
+
+COMM ** Execução do loop.
+DO SCRIPT D99b_Tratamento WHILE v_Contador <= v_NrArquivos
+
+COMM ** Teste para saber se houve erro na exportação.
+v_Teste3 = v_Teste1 - v_Teste2
+
+IF v_Teste1 =  v_Teste2 PAUSE "Sucesso na divisão de %v_Teste1% registros em %v_NrArquivos% arquivos."
+IF v_Teste1 <> v_Teste2 PAUSE "Problema na divisão dos registros. Divergência de %v_Teste3% registros."
+
+COMMENT
+** Padronização para campos, filtros e resultados gerados.
+** c_ - Prefixo para campo calculado;
+** f_ - Prefixo para filtro salvo;
+** P_ - Prefixo para resultados gerados.
+
+
+COMMENT
+** Padronização para tabelas temporárias.
+** O nome da tabela gerada deverá obedecer a seguinte nomenclatura T<NN>_<XXXX>_<ZZZZ> onde:
+** NN   - Número sequencial de tabelas geradas;
+** XXXX - Comando utilizado para geração da tabela
+**        Ex: JOIN = JOIN, EXTR = EXTRACT, APPE = APPEND, SUMM = SUMMARIZE, CTAB = CROSS TAB, etc;
+** ZZZZ - Algo que identifique a origem da tabela temporária
+**        Ex: T01_EXTR_PA0001, T02_JOIN_EKKO_EKPO, etc.
+
+
+COMMENT
+** Padronização para arquivos de parâmetros (utlizados em extrações intermediárias).
+** O nome do arquivo gerado deverá obedecer a seguinte nomenclatura PARAM_<ORIGEM>_TO_<DESTINO> onde:
+** ORIGEM  - Tabela/campo origem da informação.
+** DESTINO - Tabela onde a informação original (tabela/campo) será inserida.
+**           Ex: PARAM_EKKO_TO_EKPO.txt, PARAM_EBELN_TO_EKPO, PARAM_BKPF_TO_BSAK.txt, etc.
+
+
+CLOSE
+SET SAFETY ON

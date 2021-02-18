@@ -1,0 +1,22 @@
+SET SESSION - _X00b_AtualizaCaminhos - %v_Contador%
+SET SAFETY OFF
+
+COMM ** Este script é o complemento de "X00b_AtualizaCaminhos", pois, no ACL, a estrutura do loop deve estar num script separado.
+
+OPEN AUX_TABLES
+SET FILTER TO table_name <> "AUX_ARQUIVO_ACL"
+
+COMM ** Localização do registro indexado por v_Contador em cada passagem do loop de importação.
+LOCATE RECORD v_Contador
+
+COMM ** Nome do arquivo correspondente ao registro indexado por v_Contador.
+v_Arquivo = ALLTRIM(NEW_PATH)
+v_Tabela = ALLTRIM(table_name)
+
+OPEN "%v_Arquivo%" FORMAT "%v_Tabela%"
+
+COMM ** Incremento do contador.
+v_Contador = v_Contador + 1
+
+CLOSE
+SET SAFETY ON

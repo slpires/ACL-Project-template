@@ -1,0 +1,77 @@
+SET SESSION - Z99a_Limpar
+SET SAFETY OFF
+
+SET FOLDER /Temp
+
+COMM ** Limpeza de arquivos/estruturas temporárias utilizando estrutura de loop.
+
+COMM ** Local do projeto ACL.
+DIRECTORY "*.ACL" TO AUX_ARQUIVO_ACL
+OPEN AUX_ARQUIVO_ACL
+
+COMM ** Esta variável contém o diretório do arquivo ".ACL" e é preenchida de forma dinâmica.
+v_Path = SUBSTRING(ALLTRIM(FILE_NAME); 1; LENGTH(ALLTRIM(FILE_NAME))-AT(1; "\"; REVERSE(ALLTRIM(FILE_NAME))))
+
+COMM ** Lista os arquivos no diretório.
+DIRECTORY "%v_Path%\T*.FIL"  SUPPRESS TO AUX_ARQUIVOS
+DIRECTORY "%v_Path%\*.INX"   SUPPRESS TO AUX_ARQUIVOS APPEND
+DIRECTORY "%v_Path%\PARAM_*" SUPPRESS TO AUX_ARQUIVOS APPEND
+DIRECTORY "%v_Path%\*_TO_*"  SUPPRESS TO AUX_ARQUIVOS APPEND
+
+COMM ** Contagem do total de arquivos lidos.
+OPEN AUX_ARQUIVOS
+COUNT
+
+COMM ** Armazenamento da contagem realizada logo acima.
+v_NrReg = COUNT1 
+
+COMM ** Variável que auxiliará no loop.
+v_Contador = 1
+ 
+COMM ** Execução do loop.
+DO SCRIPT Z99b_Limpar WHILE v_Contador <= v_NrReg
+
+COMM ** Exclusão dos arquivos/estruturas auxiliares criadas para o funcionamento deste ACL.
+DELETE FORMAT AUX_ARQUIVO_ACL OK
+DELETE FORMAT AUX_ARQUIVOS    OK
+DELETE FORMAT AUX_TESTE       OK
+
+DELETE AUX_ARQUIVO_ACL.FIL OK
+DELETE AUX_ARQUIVOS.FIL    OK
+DELETE AUX_TESTE.FIL       OK
+
+COMM ** Exclusão da pasta temporária.
+DELETE FOLDER /Temp OK
+
+COMM ** Limpar o conteúdo das variáveis do projeto.
+DELETE ALL OK
+
+
+COMMENT
+** Padronização para campos, filtros e resultados gerados.
+** c_ - Prefixo para campo calculado;
+** f_ - Prefixo para filtro salvo;
+** P_ - Prefixo para resultados gerados.
+
+
+COMMENT
+** Padronização para tabelas temporárias.
+** O nome da tabela gerada deverá obedecer a seguinte nomenclatura T<NN>_<XXXX>_<ZZZZ> onde:
+** NN   - Número sequencial de tabelas geradas;
+** XXXX - Comando utilizado para geração da tabela
+**        Ex: JOIN = JOIN, EXTR = EXTRACT, APPE = APPEND, SUMM = SUMMARIZE, CTAB = CROSS TAB, etc;
+** ZZZZ - Algo que identifique a origem da tabela temporária
+**        Ex: T01_EXTR_PA0001, T02_JOIN_EKKO_EKPO, etc.
+
+
+COMMENT
+** Padronização para arquivos de parâmetros (utlizados em extrações intermediárias).
+** O nome do arquivo gerado deverá obedecer a seguinte nomenclatura PARAM_<ORIGEM>_TO_<DESTINO> onde:
+** ORIGEM  - Tabela/campo origem da informação.
+** DESTINO - Tabela onde a informação original (tabela/campo) será inserida.
+**           Ex: PARAM_EKKO_TO_EKPO.txt, PARAM_EBELN_TO_EKPO, PARAM_BKPF_TO_BSAK.txt, etc.
+
+
+
+CLOSE
+SET SAFETY ON

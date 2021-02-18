@@ -1,0 +1,34 @@
+SET SESSION - _X00a_AtualizaCaminhos
+SET SAFETY OFF
+
+SET FOLDER /Temp
+
+COMMENT ** Atualiza o caminho dos arquivos ".FIL" sem a necessidade de executar o projeto ACL novamente.
+
+COMM ** Local do projeto ACL.
+DIRECTORY "*.ACL" TO AUX_ARQUIVO_ACL
+OPEN AUX_ARQUIVO_ACL
+
+COMM ** Diretório do arquivo ".ACL" com preenchimento dinâmico.
+v_Path = SUBSTRING(ALLTRIM(FILE_NAME); 1; LENGTH(ALLTRIM(FILE_NAME))-AT(1; "\"; REVERSE(ALLTRIM(FILE_NAME))))
+
+COMM ** Lista as tabelas existentes no projeto ACL.
+SAVE TABLELIST TABLE TO AUX_TABLES
+OPEN AUX_TABLES
+
+COMM ** Define o novo caminho para os arquivos ".FIL".
+DELETE FIELD NEW_PATH
+DEFINE FIELD NEW_PATH COMPUTED (ALLTRIM("%v_Path%") + SPLIT(ALLTRIM(Data_file_Path); "%_v_PathOriginal%"; 2))
+
+COMM ** Quantidade de tabelas existentes no projeto.
+COUNT
+v_NrReg = COUNT1 
+
+COMM ** Variável que auxiliará no loop.
+v_Contador = 1
+
+COMM ** Execução do loop.
+DO SCRIPT _X00b_AtualizaCaminhos WHILE v_Contador <= v_NrReg
+
+CLOSE
+SET SAFETY ON

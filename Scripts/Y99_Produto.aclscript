@@ -1,0 +1,40 @@
+SET SESSION - Y99_Produto
+SET SAFETY OFF
+
+SET FOLDER /Produto
+
+COMM ** Extração de um Produto.
+OPEN TABELA
+EXTRACT FIELDS CAMPO1 CAMPO2 CAMPO3 CAMPO4 TO "%v_PathFIL%\P_<NOME>" OPEN
+
+COMM ** Exportação para arquivo ".CSV" (execução mais rápida).
+EXPORT FIELDS CAMPO1 AS 'CAMPO1'  CAMPO2 AS 'CAMPO2'  CAMPO3 AS 'CAMPO3'  CAMPO4 AS 'CAMPO4'  DELIMITED TO "%v_PathProduto%\%v_Produto%" KEEPTITLE SEPARATOR ";" QUALIFIER '"'
+
+
+COMMENT
+** Padronização para campos, filtros e resultados gerados.
+** c_ - Prefixo para campo calculado;
+** f_ - Prefixo para filtro salvo;
+** P_ - Prefixo para resultados gerados.
+
+
+COMMENT
+** Padronização para tabelas temporárias.
+** O nome da tabela gerada deverá obedecer a seguinte nomenclatura T<NN>_<XXXX>_<ZZZZ> onde:
+** NN   - Número sequencial de tabelas geradas;
+** XXXX - Comando utilizado para geração da tabela
+**        Ex: JOIN = JOIN, EXTR = EXTRACT, APPE = APPEND, SUMM = SUMMARIZE, CTAB = CROSS TAB, etc;
+** ZZZZ - Algo que identifique a origem da tabela temporária
+**        Ex: T01_EXTR_PA0001, T02_JOIN_EKKO_EKPO, etc.
+
+
+COMMENT
+** Padronização para arquivos de parâmetros (utlizados em extrações intermediárias).
+** O nome do arquivo gerado deverá obedecer a seguinte nomenclatura PARAM_<ORIGEM>_TO_<DESTINO> onde:
+** ORIGEM  - Tabela/campo origem da informação.
+** DESTINO - Tabela onde a informação original (tabela/campo) será inserida.
+**           Ex: PARAM_EKKO_TO_EKPO.txt, PARAM_EBELN_TO_EKPO, PARAM_BKPF_TO_BSAK.txt, etc.
+
+
+CLOSE
+SET SAFETY ON

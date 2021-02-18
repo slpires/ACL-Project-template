@@ -1,0 +1,76 @@
+SET SESSION - C99_Join
+SET SAFETY OFF
+
+SET FOLDER /Temp
+
+COMMENT
+***************************************
+** PARA RELACIONAMENTO ENTRE TABELAS **
+***************************************
+
+COMM ** Criação dos índices.
+OPEN TABELA1
+INDEX ON CHAVE1 TO "INX_TABELA1_CAMPO"
+
+COMM ** Definição dos relacionamentos.
+OPEN TABELA2
+DEFINE RELATION CHAVE2 WITH TABELA1 INDEX INX_TABELA1_CAMPO AS RELACIONAMENTO1
+
+
+COMMENT
+********************************
+** PARA ASSOCIACAO DE TABELAS **
+********************************
+
+COMM ** Associações de tabelas.
+OPEN TABELA1
+OPEN TABELA2 SECONDARY
+JOIN PKEY CHAVE1 FIELDS CAMPO2 CAMPO3 CAMPO4 SKEY CHAVE2 WITH CAMPO5 CAMPO6 CAMPO7 TO "T<NN>_<XXXX>.FIL" PRESORT MANY SECSORT
+CLOSE
+CLOSE SECONDARY
+
+COMMENT
+** Tipos de associações:
+** https://enablement.acl.com/helpdocs/analytics/125/user-guide/pt-br/Content/da_combining_data/types_of_joins.htm
+**
+** PRESORT SECSORT                   -> Registros primários e secundários correspondidos;
+**
+** PRIMARY PRESORT SECSORT           -> Todos os registros primários, registros secundários correspondidos;
+**
+** SECONDARY PRESORT SECSORT         -> Todos os registros secundários, registros primários correspondidos;
+**
+** PRIMARY SECONDARY PRESORT SECSORT -> Todos os registros primários e secundários, correspondidos e não correspondidos;
+**
+** UNMATCHED PRESORT SECSORT         -> Registros primários não correspondentes;
+**
+** PRESORT MANY SECSORT              -> Registros primários e secundários correspondidos, incluindo qualquer
+**                                      correspondência secundária duplicada (correspondência de muitos para muitos).
+
+
+COMMENT
+** Padronização para campos, filtros e resultados gerados.
+** c_ - Prefixo para campo calculado;
+** f_ - Prefixo para filtro salvo;
+** P_ - Prefixo para resultados gerados.
+
+
+COMMENT
+** Padronização para tabelas temporárias.
+** O nome da tabela gerada deverá obedecer a seguinte nomenclatura T<NN>_<XXXX>_<ZZZZ> onde:
+** NN   - Número sequencial de tabelas geradas;
+** XXXX - Comando utilizado para geração da tabela
+**        Ex: JOIN = JOIN, EXTR = EXTRACT, APPE = APPEND, SUMM = SUMMARIZE, CTAB = CROSS TAB, etc;
+** ZZZZ - Algo que identifique a origem da tabela temporária
+**        Ex: T01_EXTR_PA0001, T02_JOIN_EKKO_EKPO, etc.
+
+
+COMMENT
+** Padronização para arquivos de parâmetros (utlizados em extrações intermediárias).
+** O nome do arquivo gerado deverá obedecer a seguinte nomenclatura PARAM_<ORIGEM>_TO_<DESTINO> onde:
+** ORIGEM  - Tabela/campo origem da informação.
+** DESTINO - Tabela onde a informação original (tabela/campo) será inserida.
+**           Ex: PARAM_EKKO_TO_EKPO.txt, PARAM_EBELN_TO_EKPO, PARAM_BKPF_TO_BSAK.txt, etc.
+
+
+CLOSE
+SET SAFETY ON

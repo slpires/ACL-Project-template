@@ -1,0 +1,103 @@
+SET SESSION - A99_Variaveis
+SET SAFETY OFF
+
+SET FOLDER /Temp
+
+COMMENT
+*******************************************************************************************************
+*******************************************************************************************************
+**                         Declaração/Lista de Todas as Variáveis do Projeto                         **
+**                                                                                                   **
+** v_AnoDemanda    - Ano da demanda;                                                                 **
+** v_Arquivo       - Nome do arquivo de dados (podendo existir v_Arquivo1, v_Arquivo2, etc.);        **
+** v_BasicosOpcao  - Opção do diretório contendo as tabelas básicas;                                 **
+** v_Contador      - Contador utilizado em scripts (Ex: loop.);                                      **
+** v_Data          - Data;                                                                           **
+** v_NrReg         - Quantidade de registros em uma tabela;                                          **
+** v_Opcao         - Opção da caixa de seleção principal do projeto;                                 **
+** v_NrDemanda     - Número da demanda;                                                              **
+** _v_PathOriginal - Diretório onde será armazenado a pasta raiz da demanda durante a última         **
+**                   execução do projeto.  Essa variável mantém seu valor quando fechamos o projeto. **
+** v_Path          - Diretório onde estão armazenados os arquivos de dados da demanda;               **
+** v_PathAnexo     - Diretório onde estão armazenados os anexos da demanda;                          **
+** v_PathApoio     - Diretório onde estão armazenados os arquivos do material de apoio da demanda;   **
+** v_PathBasicos   - Diretório onde estão armazenados os arquivos de dados mestres;                  **
+** v_PathFIL       - Diretório onde estão armazenados os arquivos .FIL que devem ser mantidos;       **
+** v_PathLAYOUT    - Diretório onde estão armazenados os arquivos contendo LAYOUTS pré-definidos;    **
+** v_PathProduto   - Diretório onde serão armazenados os produtos da demanda;                        **
+** v_Produto       - Prefixo do produto;                                                             **
+** v_Teste         - Utiizada em testes internos (podendo existir v_Teste1, v_Teste2, etc.);         **
+** v_Tabela        - Nome da tabela.                                                                 **
+**                                                                                                   **
+**                                                                                                   **
+** OBS: A declaração de algumas variáveis pode ocorrer em outros scripts conforme a necessidade de   **
+**      utilização.                                                                                  **
+**                                                                                                   **
+*******************************************************************************************************
+*******************************************************************************************************
+
+COMM ** Limpar o conteúdo das variáveis do projeto.
+DELETE ALL OK
+
+COMM ** Local do projeto ACL.
+DIRECTORY "*.ACL" TO AUX_ARQUIVO_ACL
+OPEN AUX_ARQUIVO_ACL
+
+COMM ** Variáveis de ANO e DEMANDA serão preenchidas corretamente desde que o arquivo ".ACL" possua o padrão "Origem AAAA_NNN".
+v_AnoDemanda = LAST(SPLIT(SUBSTRING(ALLTRIM(FILE_NAME); LENGTH(ALLTRIM(FILE_NAME))-AT(1; "\"; REVERSE(ALLTRIM(FILE_NAME)))+2; AT(1; "\"; REVERSE(ALLTRIM(FILE_NAME)))); "_"; 1); 4)
+
+v_NrDemanda  = SUBSTRING(SPLIT(SUBSTRING(ALLTRIM(FILE_NAME); LENGTH(ALLTRIM(FILE_NAME))-AT(1; "\"; REVERSE(ALLTRIM(FILE_NAME)))+2; AT(1; "\"; REVERSE(ALLTRIM(FILE_NAME)))); "_"; 2); 1; 3)
+
+COMM ** A variável de data logo abaixo deve estar no formato de STRING para ser exibida na caixa de diálogo.
+v_Data = SUBSTRING(DATETIME(TODAY()); 1; 10)
+
+
+COMMENT
+**************************
+** VARIÁVEIS DE CAMINHO **
+**************************
+
+COMM ** Diretório do arquivo ".ACL" com preenchimento dinâmico.
+v_Path = SUBSTRING(ALLTRIM(FILE_NAME); 1; LENGTH(ALLTRIM(FILE_NAME))-AT(1; "\"; REVERSE(ALLTRIM(FILE_NAME))))
+
+COMM ** Diretório do PROJETO ACL a ser mantido após o fechamento. O valor desta variável não é perdido.
+_v_PathOriginal = "%v_Path%"
+
+COMM ** Diretório dos arquivos ".FIL" que precisam ser mantidos.
+v_PathFIL = "%v_Path%" + "\_FIL"
+
+COMM ** Diretório dos LAYOUTS pré-definidos.
+v_PathLAYOUT = "%v_Path%" + "\_LAYOUT"
+
+COMM ** Diretório dos ANEXOS enviados pelo solicitante.
+v_PathAnexo = SUBSTRING(ALLTRIM(FILE_NAME); 1; LENGTH(ALLTRIM(FILE_NAME))-AT(2; "\"; REVERSE(ALLTRIM(FILE_NAME)))) + "\Anexos_solicitante"
+
+COMM ** Diretório do MATERIAL DE APOIO utilizado.
+v_PathApoio = SUBSTRING(ALLTRIM(FILE_NAME); 1; LENGTH(ALLTRIM(FILE_NAME))-AT(2; "\"; REVERSE(ALLTRIM(FILE_NAME)))) + "\Material_de_apoio"
+
+COMM ** Diretório do(s) PRODUTO(s) gerados.
+v_PathProduto = SUBSTRING(ALLTRIM(FILE_NAME); 1; LENGTH(ALLTRIM(FILE_NAME))-AT(2; "\"; REVERSE(ALLTRIM(FILE_NAME)))) + "\Produto"
+
+
+COMMENT
+** Devido a limitação do SAP na quantidade de linhas (aproximadamente 9.768) num parâmetro de seleção, podemos utilizar
+** vários arquivos .TXT (pacotes) contendo uma quantidade padrão de registros.
+** Por isso, utlizamos a variável abaixo no caso de extrações intermediárias ao longo do projeto.
+
+v_NrRegExport = 9000
+
+COMM ** Caixa de diálogo para digitar o ano, o número da demanda e o caminho dos arquivos caso necessário.
+DIALOG (DIALOG TITLE "Dados gerais da demanda (altere caso necessário):" WIDTH 409 HEIGHT 268 ) (BUTTONSET TITLE "&OK;&Cancelar" AT 132 231 DEFAULT 1 HORZ ) (TEXT TITLE "Ano (AAAA):" AT 12 16 HEIGHT 15 ) (EDIT TO "v_AnoDemanda" AT 12 36 WIDTH 37 HEIGHT 19 DEFAULT "%v_AnoDemanda%" ) (TEXT TITLE "Número (NNN):" AT 108 16 HEIGHT 15 ) (EDIT TO "v_NrDemanda" AT 108 36 WIDTH 36 HEIGHT 19 DEFAULT "%v_NrDemanda%" ) (TEXT TITLE "Data (DD/MM/AAAA):" AT 228 16 HEIGHT 14 ) (EDIT TO "v_Data" AT 228 36 WIDTH 70 HEIGHT 19 DEFAULT "%v_Data%" ) (TEXT TITLE "Caminho onde se encontram os arquivos de dados:" AT 12 64 WIDTH 292 HEIGHT 14 ) (EDIT TO "v_Path" AT 12 84 WIDTH 379 HEIGHT 22 DEFAULT "%v_Path%" ) (TEXT TITLE "Caminho onde se encontram as tabelas básicas:" AT 12 115 WIDTH 279 HEIGHT 13 ) (RADIOBUTTON TITLE "1 - Pasta da rede.;2 - Máquina do usuário." TO "v_BasicosOpcao" AT 12 135 WIDTH 377 HEIGHT 46 DEFAULT 1 ) (TEXT TITLE "Número de registros por arquivo em caso de divisão por pacotes:" AT 12 190 WIDTH 391 HEIGHT 16 ) (EDIT TO "v_NrRegExport" AT 12 210 WIDTH 50 HEIGHT 22 DEFAULT "%v_NrRegExport%" )
+
+COMM ** Diretório das TABELAS BÁSICAS.
+IF v_BasicosOpcao = 1 v_pathBasicos = ""
+IF v_BasicosOpcao = 2 v_pathBasicos = "%v_Path%\_BASICOS"
+
+COMM ** Esta variável precisa ser definida neste ponto para funcionamento correto no script.
+v_Produto = "Produto_%v_AnoDemanda%_%v_NrDemanda%"
+
+COMM ** Caixa de seleção - exemplo.
+DIALOG (DIALOG TITLE "Selecione a opção:" WIDTH 433 HEIGHT 120 ) (BUTTONSET TITLE "&OK;&Cancelar" AT 120 72 DEFAULT 1 HORZ ) (RADIOBUTTON TITLE "1 - Opção 1.;2 - Opção 2.;3 - Opção 3." TO "v_Opcao" AT 12 12 WIDTH 396 HEIGHT 56 DEFAULT 1 )
+
+CLOSE
+SET SAFETY ON
